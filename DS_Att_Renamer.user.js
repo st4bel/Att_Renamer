@@ -58,10 +58,12 @@
     //script öffnet zum Umbenennen einen neuen Tab, dieser ist mit dem php-Parameter "AR=1" gekennzeichnet.
 	if(getPageAttribute("AR")=="1"){
         //benennt den aktuellen Angriff aufgrund der verfügbaren Daten auf der Seite screen=info_command&id=--attack_id--
+        window.blur()
 		renaming();
 	}
     if(getPageAttribute("AR")!="0"){
         //benennt den aktuellen Angriff aufgrund der verfügbaren Daten auf der Seite screen=info_command&id=--attack_id--
+        window.blur()
 		fake_renaming();
 	}
 	function renaming(){
@@ -136,7 +138,7 @@
         setTimeout(function(){
 			window.close();
 		}
-		,500);
+		,10);
     }
 	function start_running(){
 		var table 	= $("#incomings_table");
@@ -153,7 +155,7 @@
 				cell.css("background-color","yellow");
 				new_Attack=true;
 				var link = $("a",cell).attr("href")+"&AR=1";
-				window.open(link, '_blank');
+			    window.open(link, '_blank');
 			}
 			//Einfärben der letzten Zelle, wenn Angriff in weniger als 10 min ankommt
 			if($("span",duration_cell).text().substring(0,3).indexOf("0:0")!=-1){
@@ -170,11 +172,13 @@
                     $("span.quickedit-content",cell).append(
                         $("<a>")
                         .text(template+" ")
+                        .attr("AR",templates[template])
                 		.click(function(){
                 			//alert("What is love? "+$(this).attr("data-id"));
                             var fake_span = $("span.quickedit[data-id|='"+$(this).attr("data-id")+"']");
-                            var link = $("a",fake_span).attr("href")+"&AR="+templates[template];
+                            var link = $("a",fake_span).attr("href")+"&AR="+$(this).attr("AR");
             				window.open(link, '_blank');
+
                 		})
                 		.attr("href","#")
                         .attr("data-id",$("span.quickedit",cell).attr("data-id"))
