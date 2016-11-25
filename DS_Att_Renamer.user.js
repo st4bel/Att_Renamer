@@ -25,7 +25,7 @@
  */
 
  var $ = typeof unsafeWindow != 'undefined' ? unsafeWindow.$ : window.$;
-
+ var _Anleitungslink = "http://blog.ds-kalation.de/?p=61";
  var unit_speed = {"Späher":9,"LKAV":10,"SKAV":11,"Axtkämpfer":18,"Schwertkämpfer":22,"Ramme":30,"AG":35};
 
  $(function(){
@@ -127,7 +127,7 @@
 		setTimeout(function(){
 			window.close();
 		}
-		,500);
+		,50);
 	}
     function fake_renaming(){
         //alert("hey")
@@ -328,6 +328,9 @@
 
 		$("<button>").text("Schließen").click(function(){
             toggleSettingsVisibility();
+        }).appendTo(settingsDiv);
+        $("<button>").text("Anleitung").click(function(){
+            window.open(_Anleitungslink, '_blank');
         }).appendTo(settingsDiv);
 		function addRow(desc,content) {
             $("<tr>")
