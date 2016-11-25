@@ -8,7 +8,7 @@
 // @grant       unsafeWindow
 // @match       https://*.die-staemme.de/game.php?*screen=overview_villages*
 // @include     https://*.die-staemme.de/game.php?*screen=overview_villages*
-// @include     https://*.die-staemme.de/game.php?*screen=info_command&id=*&AR=1
+// @include     https://*.die-staemme.de/game.php?*screen=info_command&id=*&AR=*
 // @copyright   2015+, the stabel, git
 // @downloadURL https://github.com/st4bel/staemmescripte/blob/master/DS_Att_Renamer.js
 // ==/UserScript==
@@ -44,6 +44,9 @@
 	storageSet("refresh_intervall",storageGet("refresh_intervall",10));
 	storageSet("show_returntime",storageGet("show_returntime","0"));
 	storageSet("alarm",storageGet("alarm","0"));
+    storageSet("fake",storageGet("fake","0"));
+    storageSet("rename_templates",storageGet("rename_templates",'{"<-f":"Fake:"}'));
+    //storageSet("rename_templates",'{"<-f":"Fake:"}');
 
     init_UI();
     //Prüft in Tabelle .modmenu, ob "Eintreffend" ausgewählt ist.
@@ -57,6 +60,10 @@
         //benennt den aktuellen Angriff aufgrund der verfügbaren Daten auf der Seite screen=info_command&id=--attack_id--
 		renaming();
 	}
+    if(getPageAttribute("AR")!="0"){
+        //benennt den aktuellen Angriff aufgrund der verfügbaren Daten auf der Seite screen=info_command&id=--attack_id--
+		fake_renaming();
+	}
 	function renaming(){
 
 		$(".rename-icon").click();
@@ -66,7 +73,7 @@
 		$("td").each(function(){
 			if($(this).text().indexOf("Ankunft in:")!=-1){
 				duration_cell=$(this).next();
-				duration_cell.css("background-color","green")
+				duration_cell.css("background-color","green");
 			}
 		});
 
@@ -120,6 +127,17 @@
 		}
 		,500);
 	}
+    function fake_renaming(){
+        //alert("hey")
+        $(".rename-icon").click();
+        var attackname = getPageAttribute("AR")+" "+$('[type="text"]').val();
+        $('[type="text"]').val(attackname);
+		$(".btn").click();
+        setTimeout(function(){
+			window.close();
+		}
+		,500);
+    }
 	function start_running(){
 		var table 	= $("#incomings_table");
 		var rows 	= $("tr",table).slice(1);
@@ -138,13 +156,31 @@
 				window.open(link, '_blank');
 			}
 			//Einfärben der letzten Zelle, wenn Angriff in weniger als 10 min ankommt
-			cell = $("td",row).eq(-1);
-			if($("span",cell).text().substring(0,3).indexOf("0:0")!=-1){
-				cell.css("background-color","yellow");
-				if(parseInt($("span",cell).text().substring(3,4))<5){
-					cell.css("background-color","red");
+			if($("span",duration_cell).text().substring(0,3).indexOf("0:0")!=-1){
+				duration_cell.css("background-color","yellow");
+				if(parseInt($("span",duration_cell).text().substring(3,4))<5){
+					duration_cell.css("background-color","red");
 				}
 			}
+
+            //Einfügen aller Vorlagen
+            if(storageGet("fake")=="1"){
+                var templates = JSON.parse(storageGet("rename_templates"));
+                for(var template in templates){
+                    $("span.quickedit-content",cell).append(
+                        $("<a>")
+                        .text(template+" ")
+                		.click(function(){
+                			//alert("What is love? "+$(this).attr("data-id"));
+                            var fake_span = $("span.quickedit[data-id|='"+$(this).attr("data-id")+"']");
+                            var link = $("a",fake_span).attr("href")+"&AR="+templates[template];
+            				window.open(link, '_blank');
+                		})
+                		.attr("href","#")
+                        .attr("data-id",$("span.quickedit",cell).attr("data-id"))
+                    );
+                }
+            }
 		}
 		//letzte aktualisierung
 
@@ -264,7 +300,7 @@
             "left":"50px",
             "top":"50px",
             "width":"400px",
-            "height":"200px",
+            "height":"400px",
             "background-color":"white",
             "border":"1px solid black",
             "border-radius":"5px",
@@ -309,7 +345,7 @@
         .append($("<option>").text("Nein").attr("value",0))
         .change(function(){
             storageSet("show_returntime", $("option:selected",$(this)).val());
-            console.log(storageGet("show_returntime"));
+            console.log("Set 'show_returntime' to: "+storageGet("show_returntime"));
         });
 		$("option[value="+storageGet("show_returntime")+"]",select_show_returntime).prop("selected",true);
 
@@ -318,10 +354,59 @@
         .append($("<option>").text("Nein").attr("value",0))
         .change(function(){
             storageSet("alarm", $("option:selected",$(this)).val());
-            console.log(storageGet("alarm"));
+            console.log("Set 'alarm' to: "+storageGet("alarm"));
         });
 		$("option[value="+storageGet("alarm")+"]",select_alarm).prop("selected",true);
 
+        var select_fake = $("<select>")
+        .append($("<option>").text("Ja").attr("value",1))
+        .append($("<option>").text("Nein").attr("value",0))
+        .change(function(){
+            storageSet("fake",$("option:selected",$(this)).val());
+            console.log("Set 'fake' to: "+storageGet("fake"));
+        });
+
+        var select_rename_template = $("<select>")
+        .change(function(){
+            var templates = JSON.parse(storageGet("rename_templates"));
+            input_template_value.val(templates[$("option:selected",select_rename_template).val()]);
+        });
+        var templates = JSON.parse(storageGet("rename_templates"));
+        for(var template in templates){
+            $("<option>").text(template).attr("value",template).appendTo(select_rename_template);
+        }
+        var input_template_value = $("<input>").attr("type","text")
+		.val(templates[$("option:selected",select_rename_template).val()])
+		.on("input",function(){
+            var templates = JSON.parse(storageGet("rename_templates"));
+            templates[$("option:selected",select_rename_template).val()] = $(this).val();
+            storageSet("rename_templates",JSON.stringify(templates));
+			console.log(JSON.stringify(templates));
+		});
+        var input_new_template = $("<input>").attr("type","text")
+		.val("Anzeigename");
+
+        var button_new_template = $("<button>")
+        .text("Speichern")
+		.click(function(){
+            var templates = JSON.parse(storageGet("rename_templates"));
+            templates[input_new_template.val()] = "new";
+            storageSet("rename_templates",JSON.stringify(templates));
+            console.log(templates);
+            $("<option>").text(input_new_template.val()).attr("value","new").appendTo(select_rename_template);
+		});
+        var button_delete_template = $("<button>")
+        .text("Löschen")
+		.click(function(){
+            var templates = JSON.parse(storageGet("rename_templates"));
+            delete templates[$("option:selected",select_rename_template).val()];
+            storageSet("rename_templates",JSON.stringify(templates));
+            console.log(templates);
+            $('option[value="'+select_rename_template.val()+'"]').remove();
+            input_template_value.val(templates[$("option:selected",select_rename_template).val()]);
+		});
+
+        $("<tr>").append($("<td>").attr("colspan",2).append($("<span>").attr("style","font-weight: bold;").text("Allgemein:"))).appendTo(settingsTable);
 		addRow(
 		$("<span>").text("Aktualisierung alle x Minuten: "),
 		input_refresh_intervall);
@@ -333,6 +418,16 @@
 		addRow(
 		$("<span>").text("Warnsystem, wenn Angriff bis zur \nnächsten Aktualisierung ankommt:"),
 		select_alarm);
+
+        $("<tr>").append($("<td>").attr("colspan",2).append($("<span>").attr("style","font-weight: bold;").text("Umbenennungsvorlagen Verwalten:"))).appendTo(settingsTable);
+        addRow(
+        $("<span>").text("Umbenennungsvorlagen anzeigen:"),
+    	select_fake);
+        addRow($("<span>").text("Anzeigename"),select_rename_template);
+        addRow($("<span>").text("Umbennen in: x + alter Name:"),input_template_value);
+        addRow($("<span>").text("Ausgewählte Vorlage Löschen:"),button_delete_template);
+        $("<tr>").append($("<td>").attr("colspan",2).append($("<span>").attr("style","font-weight: bold;").text("Neue Vorlage erstellen:"))).appendTo(settingsTable);
+        addRow(input_new_template,button_new_template);
 	}
 	function randomInterval(min,max) {
         return Math.floor(Math.random() * (max - min + 1)) + min;
