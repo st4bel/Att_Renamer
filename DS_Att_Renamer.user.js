@@ -51,7 +51,7 @@
     init_UI();
     //Prüft in Tabelle .modmenu, ob "Eintreffend" ausgewählt ist.
 	var mode 	= $(".selected",$(".modemenu"));
-	if($("a",mode).eq(0).text().indexOf("Eintreffend")!=-1){
+	if($("a",mode).eq(0).text().indexOf("Eintreffend")!=-1&&storageGet("running")=="1"){
         //Prüf Routine starten
 		start_running();
 	}
