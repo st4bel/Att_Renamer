@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        DS_Att_Renamer
 // @namespace   de.die-staemme
-// @version     0.3.1
+// @version     0.4
 // @description Dieses Script benennt alle x Minuten alle neuen Angriffe automatisch um.
 // @grant       GM_getValue
 // @grant       GM_setValue
@@ -21,7 +21,8 @@
  * V 0.2.2: bugfixing / Aufruf des Renamers
  * V 0.3: Einfügen eines Einstellungs-Fensters
  * V 0.3.1: Anpassen an Staemmeupdate
-            Hinzufügen von Kommentaren
+ * V 0.4: Nur begrenzte Zahl an Angriffen gleichzeitig einfügen
+
  */
 
  var $ = typeof unsafeWindow != 'undefined' ? unsafeWindow.$ : window.$;
@@ -145,6 +146,7 @@
 		var rows 	= $("tr",table).slice(1);
 		var row;
 		var new_Attack = false;
+        var counter = 0;
 		for(var i = 0; i<rows.length; i++){
 			row	= rows[i];
 			var cell = $("td",row).eq(0);
@@ -155,7 +157,10 @@
 				cell.css("background-color","yellow");
 				new_Attack=true;
 				var link = $("a",cell).attr("href")+"&AR=1";
-			    window.open(link, '_blank');
+                if(counter<5){
+                    window.open(link, '_blank');
+                }
+                counter ++;
 			}
 			//Einfärben der letzten Zelle, wenn Angriff in weniger als 10 min ankommt
 			if($("span",duration_cell).text().substring(0,3).indexOf("0:0")!=-1){
@@ -186,6 +191,12 @@
                 }
             }
 		}
+        if(counter>=5){ //wenn mehr als 5 angriffe, mache 5s pause, sonst blokierte anfragen
+            setTimeout(function(){
+				location.href	= "/game.php?screen=overview_villages&mode=incomings&subtype=attacks";
+			},percentage_randomInterval(1500,5));
+        }
+
 		//letzte aktualisierung
 
 		$("th",table).eq(0).text($("th",table).eq(0).text()+" zuletzt aktualisiert: "+$("#serverTime").text());
