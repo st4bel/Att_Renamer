@@ -194,7 +194,7 @@
         if(counter>=5){ //wenn mehr als 5 angriffe, mache 5s pause, sonst blokierte anfragen
             setTimeout(function(){
 				location.href	= "/game.php?screen=overview_villages&mode=incomings&subtype=attacks";
-			},percentage_randomInterval(1500,5));
+			},percentage_randomInterval(3000,5));
         }
 
 		//letzte aktualisierung
