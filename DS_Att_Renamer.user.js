@@ -198,8 +198,9 @@
         }
 
 		//letzte aktualisierung
-
-		$("th",table).eq(0).text($("th",table).eq(0).text()+" zuletzt aktualisiert: "+$("#serverTime").text());
+        if($("th",table).eq(0).text().indexOf("zuletzt aktualisiert")==-1){
+            $("th",table).eq(0).text($("th",table).eq(0).text()+" zuletzt aktualisiert: "+$("#serverTime").text());
+        }
 		if(storageGet("running")=="1"){
 			setTimeout(function(){
 				location.href	= "/game.php?screen=overview_villages&mode=incomings&subtype=attacks";
