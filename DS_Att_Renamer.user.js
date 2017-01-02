@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        DS_Att_Renamer
 // @namespace   de.die-staemme
-// @version     0.5
+// @version     0.5.1
 // @description Dieses Script benennt alle x Minuten alle neuen Angriffe automatisch um.
 // @grant       GM_getValue
 // @grant       GM_setValue
@@ -23,6 +23,7 @@
  * V 0.3.1: Anpassen an Staemmeupdate
  * V 0.4: Nur begrenzte Zahl an Angriffen gleichzeitig einfügen
  * V 0.5: Umbennen in Spielername und Koordinaten
+ * V 0.5.1: auswählen des intervalls, in dem die umbennenungs-fenster geöffnet werden
  */
 
  var $ = typeof unsafeWindow != 'undefined' ? unsafeWindow.$ : window.$;
