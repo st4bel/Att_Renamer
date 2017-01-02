@@ -43,6 +43,7 @@
 
 	storageSet("running",storageGet("running","0"));
 	storageSet("refresh_intervall",storageGet("refresh_intervall",10));
+  storageSet("opening_intervall",storageGet("opening_intervall",3));
 	storageSet("show_returntime",storageGet("show_returntime","0"));
 	storageSet("alarm",storageGet("alarm","0"));
   storageSet("show_playername",storageGet("show_playername","0"));
@@ -225,7 +226,7 @@
         if(counter>=5){ //wenn mehr als 5 angriffe, mache 5s pause, sonst blokierte anfragen
             setTimeout(function(){
 				location.href	= "/game.php?screen=overview_villages&mode=incomings&subtype=attacks";
-			},percentage_randomInterval(3000,5));
+			},percentage_randomInterval(storageGet("opening_intervall")*1000,5));
         }
 
 		//letzte aktualisierung
@@ -387,7 +388,14 @@
 		.val(storageGet("refresh_intervall"))
 		.on("input",function(){
 			storageSet("refresh_intervall",parseInt($(this).val()));
-			console.log("new refresh Time: "+storageGet("refresh_intervall")+" ms");
+			console.log("new refresh Time: "+storageGet("refresh_intervall")+" min");
+		});
+    var input_opening_intervall = $("<input>")
+		.attr("type","text")
+		.val(storageGet("opening_intervall"))
+		.on("input",function(){
+			storageSet("opening_intervall",parseInt($(this).val()));
+			console.log("new opening Time: "+storageGet("opening_intervall")+" s");
 		});
 
 		var select_show_returntime = $("<select>")
@@ -478,6 +486,9 @@
 		addRow(
 		$("<span>").text("Aktualisierung alle x Minuten: "),
 		input_refresh_intervall);
+    addRow(
+    $("<span>").text("Alle x sek. Neue Fenster öffnen: "),
+    input_opening_intervall);
 
 		addRow(
 		$("<span>").text("Rückkehrzeit anzeigen?"),
