@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        DS_Att_Renamer
 // @namespace   de.die-staemme
-// @version     0.4
+// @version     0.5
 // @description Dieses Script benennt alle x Minuten alle neuen Angriffe automatisch um.
 // @grant       GM_getValue
 // @grant       GM_setValue
@@ -22,7 +22,7 @@
  * V 0.3: Einfügen eines Einstellungs-Fensters
  * V 0.3.1: Anpassen an Staemmeupdate
  * V 0.4: Nur begrenzte Zahl an Angriffen gleichzeitig einfügen
-
+ * V 0.5: Umbennen in Spielername und Koordinaten
  */
 
  var $ = typeof unsafeWindow != 'undefined' ? unsafeWindow.$ : window.$;
@@ -45,6 +45,8 @@
 	storageSet("refresh_intervall",storageGet("refresh_intervall",10));
 	storageSet("show_returntime",storageGet("show_returntime","0"));
 	storageSet("alarm",storageGet("alarm","0"));
+  storageSet("show_playername",storageGet("show_playername","0"));
+  storageSet("show_koords",storageGet("show_koords","0"));
     storageSet("fake",storageGet("fake","0"));
     storageSet("rename_templates",storageGet("rename_templates",'{"<-f":"Fake:"}'));
     //storageSet("rename_templates",'{"<-f":"Fake:"}');
@@ -99,6 +101,7 @@
                 best_diff	= diff;
 			}
 		}
+    var attackname = "";var returntime="";var playername="";var koords="";
 		//Wenn die Rückkehr angezeigt werden soll.
 		if(storageGet("show_returntime")=="1"){
 			var cell ;
@@ -119,11 +122,39 @@
 				0);
 			var rueckkehr_time = ankunft_time;
 			rueckkehr_time.setSeconds(rueckkehr_time.getSeconds()+Math.floor(unit_duration[unit]));
-			var attackname 	= unit+" Rückkehr: "+rueckkehr_time.toString().substring(4,rueckkehr_time.toString().indexOf("GMT"));
-		}else{
-			var attackname	= unit;
+			returntime	= "; Rückkehr: "+rueckkehr_time.toString().substring(4,rueckkehr_time.toString().indexOf("GMT"));
 		}
-		$('[type="text"]').val(attackname);
+    if(storageGet("show_playername")=="1"){
+      var cell = [];
+      (function findcell(){//finde erste Zelle mit "Spieler:"
+        $("td",$("#content_value")).each(function(index){
+  				if($(this).text().indexOf("Spieler:")!=-1){
+  					cell[index]	= $(this).next();
+  				}
+  			});
+      })();
+      for(var i in cell){
+        playername  = "; "+cell[i].text();
+        break;
+      }
+    }
+    if(storageGet("show_koords")=="1"){
+      var cell = [];
+      (function findcell(){//finde erste Zelle mit "Spieler:"
+        $("td",$("#content_value")).each(function(index){
+          if($(this).text().indexOf("Dorf:")!=-1){
+            cell[index]	= $(this).next();
+          }
+        });
+      })();
+      for(var i in cell){
+        koords  = "; "+cell[i].text();
+        break;
+      }
+    }
+
+    var attackname = unit + playername + koords + returntime;
+ 		$('[type="text"]').val(attackname);
 		$(".btn").click();
 		setTimeout(function(){
 			window.close();
@@ -368,6 +399,24 @@
         });
 		$("option[value="+storageGet("show_returntime")+"]",select_show_returntime).prop("selected",true);
 
+    var select_show_playername = $("<select>")
+		.append($("<option>").text("Ja").attr("value",1))
+        .append($("<option>").text("Nein").attr("value",0))
+        .change(function(){
+            storageSet("show_playername", $("option:selected",$(this)).val());
+            console.log("Set 'show_playername' to: "+storageGet("show_playername"));
+        });
+		$("option[value="+storageGet("show_playername")+"]",select_show_playername).prop("selected",true);
+
+    var select_show_koords = $("<select>")
+		.append($("<option>").text("Ja").attr("value",1))
+        .append($("<option>").text("Nein").attr("value",0))
+        .change(function(){
+            storageSet("show_koords", $("option:selected",$(this)).val());
+            console.log("Set 'show_koords' to: "+storageGet("show_koords"));
+        });
+		$("option[value="+storageGet("show_koords")+"]",select_show_koords).prop("selected",true);
+
 		var select_alarm	= $("<select>")
 		.append($("<option>").text("Ja").attr("value",1))
         .append($("<option>").text("Nein").attr("value",0))
@@ -433,7 +482,12 @@
 		addRow(
 		$("<span>").text("Rückkehrzeit anzeigen?"),
 		select_show_returntime);
-
+    addRow(
+		$("<span>").text("Spielernamen anzeigen?"),
+		select_show_playername);
+    addRow(
+		$("<span>").text("Koordinaten anzeigen?"),
+		select_show_koords);
 		addRow(
 		$("<span>").text("Warnsystem, wenn Angriff bis zur \nnächsten Aktualisierung ankommt:"),
 		select_alarm);
